@@ -27,10 +27,12 @@ router.post('/',(req,res,next)=>{
   product.save()
   .then(result=>{
     console.log(result);
-    res.status(201).json({msg:"Handling post request to /products",product:product});
+    res.status(201).json({product:product});
   })
-  .catch(err=>console.log(err))
-  res.status(500).json({msg:"Error Saving Product"})
+  .catch(err=>{
+    console.log(err)
+    res.status(500).json({msg:"Error Saving Product",error:err})
+  })
 })
 
 //@get a particular product
@@ -56,7 +58,16 @@ router.get('/:id',(req,res,next)=>{
 
 //@ update a product
 router.patch('/:id',(req,res,next)=>{
-  res.status(201).json("Update a product");
+  Product.update({_id:req.params.id},{$set:req.body})
+    .then(data=>{
+      console.log(data)
+      res.status(201).json("Update a product")
+    })
+    .catch(err=>{
+      console.log(err);
+      res.status(500).json({error:err})
+    })
+
 });
 
 // @ delete a product
@@ -68,11 +79,9 @@ router.delete('/:id',(req,res,next)=>{
     })
     .catch(err=>{
       console.log(err);
-      res.status(500).json({msg:"problem encounter"})
+      res.status(500).json({msg:"problem encounter",error:err})
     })
 
 });
 
-
-
-module.exports =router;
+module.exports = router;
