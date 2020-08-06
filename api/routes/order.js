@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Order = require('../model/order');
-const Product = require('../model/Product')
+const Product = require('../model/Product');
+const auth = require('../middleware/auth');
 
 // @ Gfetch order
-router.get('/',(req,res,next)=>{
+router.get('/',auth,(req,res,next)=>{
     Order.find()
       .select('product quantity')
       .populate('product','name')
@@ -34,7 +35,7 @@ router.get('/',(req,res,next)=>{
 })
 
 // @ submit and order
-router.post('/', (req,res,next)=>{
+router.post('/', auth,(req,res,next)=>{
     Product.findById(req.body.productId)
       .then(product=>{
         if(!product){
@@ -64,7 +65,7 @@ router.post('/', (req,res,next)=>{
 })
 
 // @ Get a single order
-router.get('/:orderId',(req,res,next)=>{
+router.get('/:orderId',auth,(req,res,next)=>{
   Order.findById(req.params.orderId)
     .select('product quantity')
     .populate('product')
@@ -88,7 +89,7 @@ router.get('/:orderId',(req,res,next)=>{
 })
 
 // @ delete an order
-router.delete('/:orderId',(req,res,next)=>{
+router.delete('/:orderId',auth,(req,res,next)=>{
     Order.remove({_id:req.params.orderId})
       .exec()
       .then(result=>{

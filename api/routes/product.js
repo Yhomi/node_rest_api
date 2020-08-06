@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Product = require('../model/Product');
 const multer = require('multer');
 const path = require('path');
+const auth = require('../middleware/auth');
 
 const storage = multer.diskStorage({
   destination:function(req,file,cb){
@@ -59,8 +60,8 @@ router.get('/',(req,res)=>{
 });
 
 //@add a product
-router.post('/',upload.single('productImage') ,(req,res,next)=>{
-  console.log(req.file);
+router.post('/',auth, upload.single('productImage') ,(req,res,next)=>{
+  
   const product = new Product({
     name:req.body.name,
     price:req.body.price,
@@ -114,7 +115,7 @@ router.get('/:id',(req,res,next)=>{
 });
 
 //@ update a product
-router.patch('/:id',(req,res,next)=>{
+router.patch('/:id',auth,(req,res,next)=>{
   Product.update({_id:req.params.id},{$set:req.body})
     .then(data=>{
 
@@ -134,7 +135,7 @@ router.patch('/:id',(req,res,next)=>{
 });
 
 // @ delete a product
-router.delete('/:id',(req,res,next)=>{
+router.delete('/:id',auth,(req,res,next)=>{
   Product.remove({_id:req.params.id})
     .then(data=>{
       res.status(201).json({

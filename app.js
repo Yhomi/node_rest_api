@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const productRoutes = require('./api/routes/product');
 const orderRoutes = require('./api/routes/order');
+const userRoutes = require('./api/routes/user');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
@@ -43,6 +44,7 @@ app.use((req,res,next)=>{
 
 app.use('/products',productRoutes);
 app.use('/orders',orderRoutes);
+app.use('/auth',userRoutes);
 
 // Handling errors
 app.use((req,res,next)=>{
