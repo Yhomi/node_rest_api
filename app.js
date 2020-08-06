@@ -11,6 +11,7 @@ const connectDB = require('./config/database');
 
 dotenv.config();
 connectDB();
+mongoose.Promise = global.Promise;
 
 // morgan for logging
 app.use(morgan('dev'));
