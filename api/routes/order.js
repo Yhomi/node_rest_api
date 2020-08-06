@@ -1,28 +1,111 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+const Order = require('../model/order');
+const Product = require('../model/Product')
 
 // @ Gfetch order
 router.get('/',(req,res,next)=>{
-  res.status(200).json({msg:"Get orders routes"});
+    Order.find()
+      .select('product quantity')
+      .populate('product','name')
+      .exec()
+      .then(data=>{
+
+        res.status(200).json({
+          count:data.length,
+          orders:data.map(dat=>{
+            return{
+              product:dat.product,
+              quantity:dat.quantity,
+              request:{
+                type:"GET",
+                description:'Get a particular order',
+                url:'http://localhost:5000/orders/'+dat._id
+              }
+            }
+          })
+
+        })
+      })
+      .catch(err=>{
+        res.status(500).json({error:err})
+      })
 })
 
 // @ submit and order
-router.post('/',(req,res,next)=>{
-  const order = {
-    productId:req.body.productId,
-    qty:req.body.qty
-  }
-  res.status(201).json({msg:'Submit an order',order:order});
+router.post('/', (req,res,next)=>{
+    Product.findById(req.body.productId)
+      .then(product=>{
+        if(!product){
+          return res.status(404).json({message:"Product not Found"})
+        }
+        const order = new Order({
+          product:req.body.productId,
+          quantity:req.body.qty
+        })
+        return order.save()
+      })
+      .then(result=>{
+      res.status(201).json({
+        message:"Order added successfully",
+        order:result,
+        request:{
+          type:"GET",
+          url:'http://localhost:5000/orders/'+result._id
+        }
+      })
+      })
+      .catch(err=>{
+      console.log(err);
+      res.status(500).json({error:err})
+      })
+
 })
 
 // @ Get a single order
 router.get('/:orderId',(req,res,next)=>{
-  res.status(200).json({msg:"A single order"})
+  Order.findById(req.params.orderId)
+    .select('product quantity')
+    .populate('product')
+    .then(result=>{
+      if(result){
+        res.status(200).json({
+          order:result,
+          request:{
+            type:'GET',
+            description:'Fetch all orders',
+            url:'http://localhost:5000/orders'
+          }
+        });
+      }else{
+        res.status(404).json({message:'Order not Found'})
+      }
+    })
+    .catch(err=>{
+      res.status(500).json({error:err})
+    })
 })
 
 // @ delete an order
 router.delete('/:orderId',(req,res,next)=>{
-  res.status(201).json({msg:"Order deleted"})
+    Order.remove({_id:req.params.orderId})
+      .exec()
+      .then(result=>{
+        res.status(200).json({
+          message:"Order deleted",
+          request:{
+            type:"POST",
+            description:'add new order',
+            url:'http://localhost:5000/orders',
+            body:{productId:"binary hex",qty:'Number'}
+          }
+        })
+
+      })
+      .catch(err=>{
+        res.status(500).json({error:err})
+      })
 })
 
 module.exports = router;
